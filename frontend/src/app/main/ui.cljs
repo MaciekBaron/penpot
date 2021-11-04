@@ -17,6 +17,7 @@
    [app.main.ui.icons :as i]
    [app.main.ui.messages :as msgs]
    [app.main.ui.onboarding]
+   [app.main.ui.releases]
    [app.main.ui.render :as render]
    [app.main.ui.settings :as settings]
    [app.main.ui.static :as static]
@@ -124,12 +125,15 @@
 
 (mf/defc app
   []
-  (let [route (mf/deref refs/route)
-        edata (mf/deref refs/exception)]
+  (let [route   (mf/deref refs/route)
+        edata   (mf/deref refs/exception)
+        profile (mf/deref refs/profile)]
     [:& (mf/provider ctx/current-route) {:value route}
-     (if edata
-       [:& static/exception-page {:data edata}]
-       [:*
-        [:& msgs/notifications]
-        (when route
-          [:& main-page {:route route}])])]))
+     [:& (mf/provider ctx/current-profile) {:value profile}
+      (if edata
+        [:& static/exception-page {:data edata}]
+        [:*
+         [:& app.main.ui.onboarding.questions/questions {:profile profile}]
+         [:& msgs/notifications]
+         (when route
+           [:& main-page {:route route}])])]]))
